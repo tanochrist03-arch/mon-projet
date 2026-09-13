@@ -15,10 +15,8 @@ export default async function handler(req, res) {
     const userText = message.text;
     const token = process.env.TELEGRAM_BOT_TOKEN || '8812176684:AAFQKagj3DBZCDJowCe7rac4zfD8tD8u4To';
 
-    // Réponse temporaire intelligente de l'Agent Hermes en attendant la connexion complète du LLM
     const replyText = Agent Hermes a bien reçu : "". Je traite ta demande 24h/24 !;
 
-    // Envoyer la réponse sur Telegram
     await fetch(https://api.telegram.org/bot\/sendMessage, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
