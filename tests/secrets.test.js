@@ -18,6 +18,8 @@ const DELIVERED_FILES = [
   'index.html',
   'assets/logo.svg',
   'assets/favicon.svg',
+  'README.md',
+  'docs/email-domain-security.md',
   'api/analyze.js',
   'api/history.js',
   'lib/checks.js',
