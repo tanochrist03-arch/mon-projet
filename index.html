@@ -852,15 +852,18 @@
       );
     } else {
       var mal = vt.malicious || 0, sus = vt.suspicious || 0;
-      var vtState = mal > 0 ? 'error' : (sus > 0 ? 'warn' : 'ok');
-      vtCard = card(IC.vt, 'VirusTotal', vtState,
+      var vtNote = mal > 0
+        ? '<p class="note" style="color:#ff9b9b">Ce domaine est signalé par ' + mal + ' moteur(s) : voir les critères déclenchés et le niveau de risque.</p>'
+        : (sus > 0 ? '<p class="note warnc">' + sus + ' moteur(s) émettent un doute sur ce domaine.</p>' : '');
+      vtCard = card(IC.vt, 'VirusTotal', vtStatus,
         kv('Moteurs malveillants', mal, { status: mal > 0 ? 'error' : 'ok' }) +
         kv('Moteurs suspicieux', sus, { status: sus > 0 ? 'warn' : 'ok' }) +
         kv('Moteurs inoffensifs', num(vt.harmless, 0), { status: 'ok' }) +
         kv('Moteurs sans verdict', num(vt.undetected, 0)) +
         kv('Catégories', (vt.categories && vt.categories.length) ? vt.categories.join(', ') : '—') +
         kv('Dernière analyse VirusTotal', vt.lastAnalysis ? dt(vt.lastAnalysis) : 'non communiquée') +
-        kv('Vérifié le', r.checkedAt ? dt(r.checkedAt) : '—')
+        kv('Vérifié le', r.checkedAt ? dt(r.checkedAt) : '—'),
+        vtNote
       );
     }
 

@@ -107,6 +107,17 @@ désactivé.
 Si `VIRUSTOTAL_API_KEY` est absente, l'application fonctionne normalement et affiche
 « VirusTotal — Désactivé ». La clé n'est jamais transmise au navigateur.
 
+Lorsqu'elle est configurée, les détections entrent dans le barème :
+
+| Détections VirusTotal | Effet |
+|---|---|
+| ≥ 3 moteurs malveillants | **+45** et critère bloquant : réputation `MALICIOUS`, risque `HIGH` |
+| 1 à 2 moteurs malveillants | +15 |
+| ≥ 2 moteurs suspicieux | +20 |
+
+Exemple mesuré en production : `contact@google.com` passe de **5** à **20**/100
+(2 moteurs malveillants) — le niveau reste `LOW`.
+
 ---
 
 ## 4. API
@@ -335,5 +346,8 @@ Captures réelles de l'application en production (aucune clé ni donnée sensibl
 - **Déploiement** : Vercel (<https://mon-projet-weld.vercel.app>) + dépôt GitHub public.
 - **Base** : Supabase / PostgreSQL, table `domain_analyses`, RLS activé.
 - **Tests** : 103/103 au vert.
-- **VirusTotal** : intégré mais désactivé tant qu'aucune clé n'est configurée côté
-  serveur (l'application reste pleinement fonctionnelle).
+- **VirusTotal** : **actif**. Clé configurée côté serveur uniquement (`.env.local` en
+  local, variable d'environnement `VIRUSTOTAL_API_KEY` en Production sur Vercel, de
+  type *Secret*). Les détections sont affichées dans la carte VirusTotal et
+  participent au score ; si la clé venait à être retirée, l'application continuerait
+  de fonctionner en affichant « VirusTotal — Désactivé ».
