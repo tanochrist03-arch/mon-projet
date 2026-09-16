@@ -1,8 +1,8 @@
 'use strict';
 /**
  * Email Domain Security — GET /api/history
- * Renvoie les analyses enregistrées, avec pagination et recherche :
- *   ?limit=10&offset=0&q=google
+ * Renvoie les analyses enregistrées, avec pagination, recherche, filtre et tri :
+ *   ?limit=10&offset=0&q=google&risk=HIGH&sort=score&dir=desc
  * Lecture uniquement, côté serveur, avec la clé secrète : le navigateur n'a
  * jamais accès à la table directement (RLS fermé, voir sql/001_domain_analyses.sql).
  */
@@ -25,6 +25,9 @@ module.exports = async function handler(req, res) {
     limit: query.limit,
     offset: query.offset,
     search: query.q || query.search,
+    risk: query.risk,
+    sort: query.sort,
+    dir: query.dir,
     config: supabaseConfig()
   });
 
@@ -36,6 +39,9 @@ module.exports = async function handler(req, res) {
     limit: result.limit,
     offset: result.offset,
     search: result.search || '',
+    risk: result.risk || '',
+    sort: result.sort || 'date',
+    dir: result.dir || 'desc',
     error: result.error || null,
     message: result.message || null,
     rows: result.rows

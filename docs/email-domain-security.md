@@ -14,11 +14,11 @@ Aucune étape de build, aucune dépendance supplémentaire (Node 20+ requis).
 ### En production (Vercel)
 | Route | Méthode | Rôle |
 |---|---|---|
-| `/` | GET | Interface **Email Domain Security** (formulaire, rapport, historique) |
+| `/` | GET | Interface **Email Domain Security** — deux vues : accueil (analyse) et `#/historique` (analyses passées) |
 | `/api/analyze` | GET | Informations sur l'application (nom, version, sources actives) |
 | `/api/analyze` | POST | `{ "email": "contact@entreprise.com" }` → rapport complet |
 | `/api/analyze?email=...` | GET | Même analyse, pratique pour tester en ligne de commande |
-| `/api/history` | GET | Analyses enregistrées : `?limit=10&offset=0&q=google` (recherche par domaine ou email) |
+| `/api/history` | GET | Analyses enregistrées : `?limit=10&offset=0&q=google&risk=HIGH&sort=score&dir=desc` (recherche par domaine ou email, filtre par niveau de risque, tri par date ou score) |
 
 ### En local (sans npm, sans Vercel CLI)
 ```bash

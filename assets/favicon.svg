@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Email Domain Security">
+  <title>Email Domain Security</title>
+  <defs>
+    <linearGradient id="edsFav" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5b95ff"/>
+      <stop offset="1" stop-color="#7c5cff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Version simplifiée : lisible dès 16 px -->
+  <path d="M16 1.4 28.6 6.2v10.4C28.6 23.2 23.4 29.4 16 31.1 8.6 29.4 3.4 23.2 3.4 16.6V6.2L16 1.4Z" fill="url(#edsFav)"/>
+  <rect x="9.3" y="11.4" width="13.4" height="9.8" rx="1.7" fill="#eaf1ff"/>
+  <path d="M10.5 12.9 16 16.7l5.5-3.8" fill="none" stroke="#0d1729" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

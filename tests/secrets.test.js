@@ -16,6 +16,8 @@ const ROOT = path.join(__dirname, '..');
 /** Fichiers qui partent chez le client / sur GitHub. */
 const DELIVERED_FILES = [
   'index.html',
+  'assets/logo.svg',
+  'assets/favicon.svg',
   'api/analyze.js',
   'api/history.js',
   'lib/checks.js',
@@ -86,19 +88,43 @@ test('le nom officiel est utilisé partout, l’ancien nom a disparu', () => {
   const html = read('index.html');
   assert.match(html, /<title>Email Domain Security<\/title>/, 'le titre HTML doit être le nom officiel');
   assert.match(html, /Email Domain Security 1\.0/, 'la version affichée doit être Email Domain Security 1.0');
-  assert.match(html, /Analysez la sécurité et la réputation du domaine associé à une adresse email professionnelle\./, 'sous-titre officiel attendu');
+  assert.match(html, /Saisissez une adresse email professionnelle pour analyser la réputation et les signaux de sécurité de son domaine\./, 'sous-titre officiel attendu');
+  assert.match(html, /Analysez la sécurité d’un/, 'titre principal attendu');
   assert.match(html, /Saisissez une adresse email professionnelle/, 'libellé du champ attendu');
+  assert.match(html, /Analyser le domaine/, 'libellé du bouton principal attendu');
 });
 
-test('l’interface expose les éléments clés demandés (risque, réputation, score, sources)', () => {
+test('l’interface expose les éléments clés demandés (score, risque, réputation, une carte par signal)', () => {
   const html = read('index.html');
-  for (const label of ['Risque', 'Réputation', 'Score', 'DNS', 'RDAP', 'Domaines jetables', 'urlscan.io', 'VirusTotal', 'Historique des analyses', 'Nouvelle analyse']) {
+  for (const label of ['Score de risque', 'Risque', 'Réputation', 'DNS', 'MX', 'SPF', 'DMARC', 'RDAP', 'Domaine jetable', 'urlscan.io', 'VirusTotal', 'Nouvelle analyse']) {
     assert.ok(html.includes(label), `élément d’interface manquant : ${label}`);
   }
   assert.match(html, /sourceChip\('DNS'[\s\S]{0,140}sourceChip\('RDAP'/, 'chaque source doit avoir sa propre pastille');
   assert.match(html, /disabled: \{ cls: 'disabled'/, 'VirusTotal doit pouvoir s’afficher comme désactivé');
   assert.match(html, /LOW<\/b> 0–24/, 'les seuils doivent être affichés');
+  assert.match(html, /VirusTotal — Désactivé/, 'l’état désactivé de VirusTotal doit être explicite');
   assert.equal(/dns : okrdap/.test(html), false, 'les sources ne doivent pas être collées');
+});
+
+test('l’historique a disparu de l’interface (ni page, ni menu, ni section)', () => {
+  const html = read('index.html');
+  assert.equal(/historique/i.test(html), false, 'aucune mention d’historique ne doit subsister dans l’interface');
+  assert.equal(html.includes('/api/history'), false, 'l’interface ne doit plus appeler /api/history');
+  assert.equal(/<table/.test(html), false, 'plus de tableau d’analyses dans l’interface');
+});
+
+test('le logo est un SVG local, sans ressource externe', () => {
+  for (const file of ['assets/logo.svg', 'assets/favicon.svg']) {
+    const svg = read(file);
+    assert.ok(svg, `${file} doit exister`);
+    assert.ok(svg.includes('<svg'), `${file} doit être un SVG`);
+    assert.ok(svg.includes('viewBox'), `${file} doit être redimensionnable`);
+    assert.equal(/<script/i.test(svg), false, `${file} ne doit contenir aucun script`);
+    assert.equal(/https?:\/\//.test(svg.replace(/xmlns="http:\/\/www\.w3\.org\/2000\/svg"/g, '')), false, `${file} ne doit référencer aucune ressource externe`);
+  }
+  const html = read('index.html');
+  assert.ok(html.includes('assets/logo.svg'), 'le header doit utiliser le logo');
+  assert.ok(html.includes('assets/favicon.svg'), 'le favicon doit pointer vers le SVG');
 });
 
 test('.gitignore protège les fichiers d’environnement', () => {

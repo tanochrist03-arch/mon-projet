@@ -84,7 +84,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
   const ext = path.extname(target);
-  const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.txt': 'text/plain' };
+  const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.txt': 'text/plain', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
   res.writeHead(200, { 'Content-Type': types[ext] || 'application/octet-stream' });
   res.end(fs.readFileSync(target));
 });

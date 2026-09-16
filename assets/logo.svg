@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Email Domain Security">
+  <title>Email Domain Security</title>
+  <defs>
+    <linearGradient id="edsShield" x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5b95ff"/>
+      <stop offset="1" stop-color="#7c5cff"/>
+    </linearGradient>
+    <linearGradient id="edsCore" x1="32" y1="8" x2="32" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#101b30"/>
+      <stop offset="1" stop-color="#070c17"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Bouclier : la promesse sécurité -->
+  <path d="M32 3 57 12.5V32c0 14.4-10.7 25.9-25 29C17.7 57.9 7 46.4 7 32V12.5L32 3Z" fill="url(#edsShield)"/>
+
+  <!-- Cœur du bouclier -->
+  <path d="M32 8.4 52.1 15.9V32c0 11.5-8.5 20.7-20.1 23.4C20.4 52.7 11.9 43.5 11.9 32V15.9L32 8.4Z" fill="url(#edsCore)"/>
+
+  <!-- Enveloppe : le domaine email -->
+  <rect x="21.4" y="25.4" width="21.2" height="15.2" rx="2.6" fill="#dbe7ff"/>
+  <path d="M23.2 27.5 32 33.6l8.8-6.1" fill="none" stroke="#0d1729" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -187,3 +187,102 @@ test('l’historique n’expose ni clé ni URL Supabase', async () => {
     assert.equal(serialized.includes('supabase.co'), false);
   });
 });
+
+/* ----------------------------- filtre par risque ------------------------ */
+
+test('le filtre de risque devient risk=eq.XXX dans la requête PostgREST', async () => {
+  const calls = captureFetch(fakeResponse([{ id: 'a', risk: 'HIGH' }], { contentRange: '0-0/1' }));
+  const result = await listAnalyses({ risk: 'HIGH', config: CONFIG });
+  assert.match(calls[0].url, /risk=eq\.HIGH/);
+  assert.equal(result.risk, 'HIGH');
+});
+
+test('le filtre de risque tolère la casse et les espaces', async () => {
+  const calls = captureFetch(fakeResponse([], { contentRange: '0-0/0' }));
+  const result = await listAnalyses({ risk: '  low ', config: CONFIG });
+  assert.match(calls[0].url, /risk=eq\.LOW/);
+  assert.equal(result.risk, 'LOW');
+});
+
+test('un niveau de risque inconnu est ignoré : aucun filtre, aucune injection', async () => {
+  const calls = captureFetch(fakeResponse([], { contentRange: '0-0/0' }));
+  const result = await listAnalyses({ risk: "LOW' OR 1=1--", config: CONFIG });
+  assert.equal(/risk=/.test(calls[0].url), false);
+  assert.equal(result.risk, '');
+});
+
+test('le niveau UNKNOWN est un filtre légitime', async () => {
+  const calls = captureFetch(fakeResponse([], { contentRange: '0-0/0' }));
+  const result = await listAnalyses({ risk: 'unknown', config: CONFIG });
+  assert.match(calls[0].url, /risk=eq\.UNKNOWN/);
+  assert.equal(result.risk, 'UNKNOWN');
+});
+
+/* ----------------------------- tri -------------------------------------- */
+
+test('tri par score décroissant : risk_score + nulls last', async () => {
+  const calls = captureFetch(fakeResponse([], { contentRange: '0-0/0' }));
+  const result = await listAnalyses({ sort: 'score', dir: 'desc', config: CONFIG });
+  assert.match(calls[0].url, /order=risk_score\.desc\.nullslast/);
+  assert.equal(result.sort, 'score');
+  assert.equal(result.dir, 'desc');
+});
+
+test('tri par score croissant', async () => {
+  const calls = captureFetch(fakeResponse([], { contentRange: '0-0/0' }));
+  await listAnalyses({ sort: 'score', dir: 'asc', config: CONFIG });
+  assert.match(calls[0].url, /order=risk_score\.asc\.nullslast/);
+});
+
+test('tri par date croissante', async () => {
+  const calls = captureFetch(fakeResponse([], { contentRange: '0-0/0' }));
+  await listAnalyses({ sort: 'date', dir: 'asc', config: CONFIG });
+  assert.match(calls[0].url, /order=created_at\.asc/);
+});
+
+test('une colonne de tri inconnue retombe sur le tri par défaut, sans injection', async () => {
+  const calls = captureFetch(fakeResponse([], { contentRange: '0-0/0' }));
+  const result = await listAnalyses({ sort: 'created_at;DROP TABLE', dir: 'desc', config: CONFIG });
+  assert.match(calls[0].url, /order=created_at\.desc/);
+  assert.equal(calls[0].url.includes('DROP'), false);
+  assert.equal(result.sort, 'date');
+});
+
+test('le tri par défaut reste les analyses les plus récentes', async () => {
+  const calls = captureFetch(fakeResponse([], { contentRange: '0-0/0' }));
+  const result = await listAnalyses({ config: CONFIG });
+  assert.match(calls[0].url, /order=created_at\.desc/);
+  assert.equal(result.sort, 'date');
+  assert.equal(result.dir, 'desc');
+});
+
+/* ----------------------------- endpoint : filtres ----------------------- */
+
+test('GET /api/history expose le filtre et le tri appliqués', async () => {
+  await withSupabaseEnv(async () => {
+    const calls = captureFetch(fakeResponse([{ id: 'a', risk: 'HIGH', domain: 'yopmail.com' }], { contentRange: '0-0/1' }));
+    const res = fakeRes();
+    await historyHandler({ method: 'GET', query: { q: 'yopmail', risk: 'HIGH', sort: 'score', dir: 'desc' } }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.payload.risk, 'HIGH');
+    assert.equal(res.payload.sort, 'score');
+    assert.equal(res.payload.dir, 'desc');
+    assert.equal(res.payload.search, 'yopmail');
+    const url = decodeURIComponent(calls[0].url);
+    assert.match(url, /risk=eq\.HIGH/);
+    assert.match(url, /order=risk_score\.desc\.nullslast/);
+    assert.match(url, /ilike\.\*yopmail\*/);
+  });
+});
+
+test('GET /api/history sans filtre : valeurs par défaut stables', async () => {
+  await withSupabaseEnv(async () => {
+    captureFetch(fakeResponse([], { contentRange: '0-0/0' }));
+    const res = fakeRes();
+    await historyHandler({ method: 'GET', query: {} }, res);
+    assert.equal(res.payload.risk, '');
+    assert.equal(res.payload.sort, 'date');
+    assert.equal(res.payload.dir, 'desc');
+  });
+});
