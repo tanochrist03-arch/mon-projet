@@ -1,58 +1,54 @@
-﻿export default async function handler(req, res) {
-  // On traite d'abord, puis on répond 200 — et on répond TOUJOURS 200 à Telegram
-  // (sinon Telegram réessaie en boucle le même update).
-  res.setHeader('Content-Type', 'application/json');
-
+﻿module.exports = async (req, res) => {
   if (req.method !== 'POST') {
+    return res.status(200).json({ status: 'Bot is running' });
+  }
+
+  const { message } = req.body;
+  if (!message || !message.text) {
     return res.status(200).json({ ok: true });
   }
 
-  // Le token vit désormais dans les variables d'environnement Vercel.
-  // Jamais en dur dans le code, jamais commité.
-  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = message.chat.id;
+  const userText = message.text.trim();
+
+  let replyText = "Désolé, une erreur est survenue.";
 
   try {
-    if (!token) {
-      console.error('TELEGRAM_BOT_TOKEN manquant dans les variables d\'environnement.');
-      return res.status(200).json({ ok: true });
+    const deepseekResponse = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [
+          { 
+            role: "system", 
+            content: "Tu es un agent expert, technique et direct. Tu réponds toujours en français avec un ton professionnel et percutant, sans phrases bateaux d'assistant." 
+          },
+          { role: "user", content: userText }
+        ],
+        stream: false
+      })
+    });
+
+    const data = await deepseekResponse.json();
+    
+    if (data.choices && data.choices.length > 0) {
+      replyText = data.choices[0].message.content;
     }
 
-    let rawBody = '';
-
-    // Lire le body en streaming
-    for await (const chunk of req) {
-      rawBody += chunk;
-    }
-
-    const update = JSON.parse(rawBody);
-
-    if (update && update.message) {
-      const chatId = update.message.chat.id;
-      const text = update.message.text ? update.message.text.trim() : '';
-
-      let replyText = "Bienvenue, Boss ! Agent Hermes est opérationnel sur Vercel.";
-      if (text === '/services') replyText = "Module E-commerce actif.";
-      if (text === '/opportunites') replyText = "Analyse des tendances en cours...";
-
-      const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: replyText
-        })
-      });
-
-      if (!response.ok) {
-        const detail = await response.text();
-        console.error('Echec sendMessage:', response.status, detail);
-      }
-    }
-
-    return res.status(200).json({ ok: true });
   } catch (error) {
-    console.error('Erreur critique:', error);
-    // On répond quand même 200 pour éviter les retries infinis de Telegram
-    return res.status(200).json({ ok: true });
+    console.error('Erreur:', error);
   }
-}
+
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text: replyText })
+  });
+
+  return res.status(200).json({ ok: true });
+};

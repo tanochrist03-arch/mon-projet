@@ -1,4 +1,16 @@
 {
+  "name": "mon-projet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agent Telegram (api/bot.js) + Email Domain Security (api/analyze.js)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "dev": "node scripts/dev-server.js",
+    "smoke": "node scripts/smoke.js"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0"
   }

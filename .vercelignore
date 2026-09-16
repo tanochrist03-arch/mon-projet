@@ -1,0 +1,20 @@
+# Fichiers à ne JAMAIS envoyer sur Vercel.
+# Le CLI Vercel suit .gitignore ; ce fichier est une ceinture de sécurité
+# supplémentaire pour les secrets, au cas où .gitignore serait modifié.
+
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+
+# Divers inutiles en production
+node_modules
+.git
+.gitignore
+tests
+sql
+docs
+*.log
+# NB : data/disposable-seed.txt est CONSERVÉ : c'est la liste de secours
+# utilisée par lib/checks.js si la liste publique est injoignable.
+# NB : la documentation interne (docs/) n'est pas publiée.
